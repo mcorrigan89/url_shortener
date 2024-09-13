@@ -1,0 +1,30 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: 
+      - "internal/repositories/queries/*.sql"
+    schema: "schema.sql"
+    database:
+      uri: "postgres://admin:admin@localhost:5432/url_shortener"
+    gen:
+      go:
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        emit_json_tags: true
+        package: "models"
+        out: "internal/repositories/models"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            nullable: false
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "uuid"
+            nullable: true
+            go_type:
+              pointer: true
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "public.citext"
+            go_type: "string"
