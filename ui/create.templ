@@ -1,0 +1,15 @@
+package ui
+
+import "github.com/mcorrigan89/url_shortener/dto"
+
+templ CreateLink(form dto.CreateLinkForm) {
+	<div>
+		<h1 class="text-3xl font-light">Create</h1>
+		<form action="/create" method="post">
+			<label for="link_url">Link</label>
+			<input id="link_url" name="link_url" type="text"/>
+			{ form.FieldErrors["link_url"] }
+			<button type="submit">Submit</button>
+		</form>
+	</div>
+}

@@ -81,10 +81,12 @@ func (service *LinkService) CreateLink(ctx context.Context, args CreateLinkArgs)
 	}
 
 	if url.Host == "" {
+		service.utils.logger.Err(ErrInvalidURL).Ctx(ctx).Str("linkURL", args.LinkURL).Msg("Invalid URL")
 		return nil, ErrInvalidURL
 	}
 
 	if url.Scheme != "https" {
+		service.utils.logger.Err(ErrInvalidURLProtocol).Ctx(ctx).Str("linkURL", args.LinkURL).Msg("Invalid URL protocol")
 		return nil, ErrInvalidURL
 	}
 

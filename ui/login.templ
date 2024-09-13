@@ -1,0 +1,35 @@
+package ui
+
+import (
+	"fmt"
+	"github.com/mcorrigan89/url_shortener/internal/config"
+	"net/url"
+)
+
+// https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&client_id=711967645126-24su46b0blhjcnqmic38blpl9eisq729.apps.googleusercontent.com&include_granted_scopes=true&redirect_uri=http%3A%2F%2Flocalhost%3A3000%25%21%28EXTRA+string%3D%2Fcallback%2Fgoogle%29&response_type=code&scope=openid+profile+email
+func googleAuthLink(cfg *config.Config) string {
+	params := url.Values{
+		"scope":                  {"openid profile email"},
+		"access_type":            {"offline"},
+		"include_granted_scopes": {"true"},
+		"response_type":          {"code"},
+		"redirect_uri":           {fmt.Sprintf("%s/callback/google", cfg.ClientURL)},
+		"client_id":              {cfg.OAuth.Google.ClientID},
+	}
+
+	return fmt.Sprintf("https://accounts.google.com/o/oauth2/v2/auth?%s", params.Encode())
+}
+
+templ Login(cfg *config.Config) {
+	<div>
+		<h1 class="text-3xl font-light">Create</h1>
+		<form action="/link/create" method="post">
+			<label for="email">Email</label>
+			<input id="email" name="email" type="text"/>
+			<label for="password">Password</label>
+			<input id="password" name="password" type="password"/>
+			<button type="submit">Submit</button>
+		</form>
+		<a href={ templ.SafeURL(googleAuthLink(cfg)) }>Login With Google</a>
+	</div>
+}

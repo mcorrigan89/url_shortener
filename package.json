@@ -1,0 +1,13 @@
+{
+  "name": "url_shortener",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.0-alpha.24",
+    "tailwindcss": "4.0.0-alpha.24"
+  }
+}

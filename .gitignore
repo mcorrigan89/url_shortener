@@ -24,4 +24,7 @@ go.work
 
 /tmp
 /bin
+/node_modules
+/bruno
+*_templ.go
 schema.sql

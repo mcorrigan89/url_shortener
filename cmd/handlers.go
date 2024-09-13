@@ -5,8 +5,11 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mcorrigan89/url_shortener/dto"
 	"github.com/mcorrigan89/url_shortener/internal/services"
 	"github.com/mcorrigan89/url_shortener/internal/usercontext"
+	"github.com/mcorrigan89/url_shortener/internal/validator"
+	"github.com/mcorrigan89/url_shortener/ui"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -16,6 +19,53 @@ func (app *application) ping(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) healthy(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"healthy": true}`))
+}
+
+func (app *application) homePage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	home := ui.Base("Home", "Home page", ui.Home())
+
+	home.Render(ctx, w)
+}
+
+func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	login := ui.Base("Login", "Login page", ui.Login(app.config))
+
+	login.Render(ctx, w)
+}
+
+func (app *application) linksPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user := usercontext.ContextGetUser(ctx)
+
+	if user == nil {
+		app.logger.Warn().Ctx(ctx).Msg("Unauthenticated user")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	linkEntities, err := app.services.LinkService.GetLinksByUserID(ctx, user.ID)
+	if err != nil {
+		app.logger.Err(err).Ctx(ctx).Msg("Error getting links by user ID")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	links := ui.Base("My Links", "Links page", ui.Links(app.config, linkEntities))
+
+	links.Render(ctx, w)
+}
+
+func (app *application) createLinkPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	createLink := ui.Base("Create link", "Create link page", ui.CreateLink(dto.CreateLinkForm{}))
+
+	createLink.Render(ctx, w)
 }
 
 func (app *application) redirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +137,49 @@ func (app *application) qrCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(code)
 }
 
+func (app *application) loginPassword(w http.ResponseWriter, r *http.Request) {
+	// ctx := r.Context()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"message": "You are authenticated"}`))
+}
+
+func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	queryParams := r.URL.Query()
+
+	codeParam := queryParams.Get("code")
+
+	if codeParam == "" {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	session, err := app.services.OAuthService.LoginWithGoogleCode(ctx, codeParam)
+
+	if err != nil {
+		app.logger.Err(err).Ctx(ctx).Msg("Error logging in with Google")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	cookie := http.Cookie{
+		Name:     "x-session-token",
+		Value:    session.Token,
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+	}
+	http.SetCookie(w, &cookie)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+type createLinkForm struct {
+	LinkURL string `form:"link_url"`
+}
+
 func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -98,22 +191,37 @@ func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input struct {
-		LinkURL string `json:"link_url"`
-	}
+	var form dto.CreateLinkForm
 
-	err := app.readJSON(w, r, &input)
+	err := r.ParseForm()
 	if err != nil {
-		app.logger.Err(err).Ctx(ctx).Msg("Error reading JSON")
+		app.logger.Err(err).Ctx(ctx).Msg("Error parsing form")
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println(input)
+	err = app.formDecoder.Decode(&form, r.PostForm)
+
+	if err != nil {
+		app.logger.Err(err).Ctx(ctx).Msg("Error decoding form")
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	form.CheckField(validator.NotBlank(form.LinkUrl), "link_url", "This field cannot be blank")
+	form.CheckField(validator.IsValidHTTPSDomainAndURL(form.LinkUrl), "link_url", "This field must be a valid URL")
+
+	if !form.Valid() {
+		fmt.Println(form.FieldErrors["link_url"])
+		createLink := ui.Base("Create link", "Create link page", ui.CreateLink(form))
+
+		createLink.Render(ctx, w)
+		return
+	}
 
 	_, err = app.services.LinkService.CreateLink(ctx, services.CreateLinkArgs{
 		UserID:  user.ID,
-		LinkURL: input.LinkURL,
+		LinkURL: form.LinkUrl,
 	})
 
 	if err != nil {
@@ -122,6 +230,5 @@ func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	http.Redirect(w, r, "/links", http.StatusSeeOther)
 }

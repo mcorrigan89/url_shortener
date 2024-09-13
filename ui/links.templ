@@ -1,0 +1,40 @@
+package ui
+
+import (
+	"fmt"
+	"github.com/mcorrigan89/url_shortener/internal/config"
+	"github.com/mcorrigan89/url_shortener/internal/entities"
+)
+
+script copyLinkToClipboard(link string) {
+	navigator.clipboard.writeText(link).then(() => {
+	  console.log('Content copied to clipboard');
+	}).catch(() => {
+	  console.error('Failed to copy');
+	});
+}
+
+templ Links(cfg *config.Config, links []*entities.LinkEntity) {
+	<div class="flex justify-center items-center flex-col gap-8 mt-12">
+		<a href="/create" class="text-blue-500">Create Link</a>
+		<ul role="list" class="flex flex-col divide-y divide-gray-100 gap-4">
+			for _, link := range links {
+				<li class="flex flex-col py-4">
+					<div class="flex flex-col">
+						<div class="">
+							<span class="antialiased text-slate-950">{ link.LinkURL }</span>
+						</div>
+						<div class="flex flex-col">
+							<span class="antialiased text-slate-950">{ link.ShortenedURL }</span>
+							<span onclick={ copyLinkToClipboard(link.ShortenedURL) } class="text-xs antialiased cursor-pointer text-slate-700">Copy to clipboard</span>
+						</div>
+					</div>
+					<div class="w-32 shrink-0 flex flex-col items-center">
+						<img src={ fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID) } alt="QR code for link"/>
+						<span onclick={ copyLinkToClipboard(fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID)) } class="text-xs antialiased cursor-pointer text-slate-700">Share QR code</span>
+					</div>
+				</li>
+			}
+		</ul>
+	</div>
+}

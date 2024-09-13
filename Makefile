@@ -11,19 +11,17 @@ start:
 build:
 	go build -o=./bin/main ./cmd
 
+.PHONY: ui	
+ui:
+	~/go/bin/templ generate
+
 .PHONY: test
 test:
 	go test -v ./...
 	
-.PHONY: codegen
-codegen:
-	go run github.com/99designs/gqlgen
-
-.PHONY: proto
-proto:
-	git submodule update --recursive --remote  
-	buf lint
-	buf generate --path proto/joyserviceapis
+.PHONY: css
+css:
+	npx @tailwindcss/cli@next -i styles/tailwind.css -o public/static/css/main.css -m
 
 # https://github.com/golang-migrate/migrate
 

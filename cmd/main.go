@@ -4,6 +4,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/go-playground/form/v4"
 	"github.com/mcorrigan89/url_shortener/internal/config"
 	"github.com/mcorrigan89/url_shortener/internal/repositories"
 	"github.com/mcorrigan89/url_shortener/internal/services"
@@ -12,11 +13,11 @@ import (
 )
 
 type application struct {
-	config   *config.Config
-	wg       *sync.WaitGroup
-	logger   *zerolog.Logger
-	services *services.Services
-	// protoServer *api.ProtoServer
+	config      *config.Config
+	wg          *sync.WaitGroup
+	logger      *zerolog.Logger
+	services    *services.Services
+	formDecoder *form.Decoder
 }
 
 func main() {
@@ -39,14 +40,14 @@ func main() {
 	repositories := repositories.NewRepositories(db, &cfg, &logger, &wg)
 	services := services.NewServices(&repositories, &cfg, &logger, &wg)
 
-	// protoServer := api.NewProtoServer(&cfg, &logger, &wg, &services, newRelic)
+	formDecoder := form.NewDecoder()
 
 	app := &application{
-		wg:       &wg,
-		config:   &cfg,
-		logger:   &logger,
-		services: &services,
-		// protoServer: protoServer,
+		wg:          &wg,
+		config:      &cfg,
+		logger:      &logger,
+		services:    &services,
+		formDecoder: formDecoder,
 	}
 
 	err = app.serve()
