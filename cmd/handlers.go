@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mcorrigan89/url_shortener/dto"
@@ -167,9 +168,11 @@ func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:     "x-session-token",
 		Value:    session.Token,
-		HttpOnly: true,
-		Secure:   true,
+		HttpOnly: false,
+		Secure:   false,
 		Path:     "/",
+		MaxAge:   int(time.Until(session.ExpiresAt).Seconds()),
+		SameSite: http.SameSiteNoneMode,
 	}
 	http.SetCookie(w, &cookie)
 
