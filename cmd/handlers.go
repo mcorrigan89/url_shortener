@@ -168,20 +168,15 @@ func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:     "x-session-token",
 		Value:    session.Token,
-		HttpOnly: false,
-		Secure:   false,
+		Secure:   true,
 		Path:     "/",
 		Domain:   app.config.ClientURL,
 		MaxAge:   int(time.Until(session.ExpiresAt).Seconds()),
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, &cookie)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-type createLinkForm struct {
-	LinkURL string `form:"link_url"`
 }
 
 func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
