@@ -64,7 +64,7 @@ func LoadConfig(cfg *Config) {
 	}
 	cfg.DB.DSN = strings.Replace(postgres_url, "?schema=public", "", -1)
 
-	cfg.Cors.TrustedOrigins = []string{"http://localhost:3000"}
+	cfg.Cors.TrustedOrigins = []string{"http://localhost:3000", "https://url.corrigan.io"}
 
 	// Load OAuth
 	google_client_id := os.Getenv("GOOGLE_CLIENT_ID")

@@ -171,6 +171,7 @@ func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: false,
 		Secure:   false,
 		Path:     "/",
+		Domain:   app.config.ClientURL,
 		MaxAge:   int(time.Until(session.ExpiresAt).Seconds()),
 		SameSite: http.SameSiteNoneMode,
 	}
