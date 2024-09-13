@@ -59,12 +59,12 @@ func Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
 }
 
-func IsValidHTTPSDomainAndURL(domain string) bool {
+func IsValidHTTPS(domain string) bool {
 	// Ensure the domain starts with https://
-	if !strings.HasPrefix(domain, "https://") {
-		return false
-	}
+	return strings.HasPrefix(domain, "https://")
+}
 
+func IsValidURL(domain string) bool {
 	_, err := url.ParseRequestURI(domain)
 	return err == nil
 }

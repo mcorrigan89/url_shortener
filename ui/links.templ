@@ -15,23 +15,23 @@ script copyLinkToClipboard(link string) {
 }
 
 templ Links(cfg *config.Config, links []*entities.LinkEntity) {
-	<div class="flex justify-center items-center flex-col gap-8 mt-12">
-		<a href="/create" class="text-blue-500">Create Link</a>
-		<ul role="list" class="flex flex-col divide-y divide-gray-100 gap-4">
+	<div class="flex justify-center items-center flex-col gap-8 bg-base min-h-screen">
+		<a href="/create" class="text-maroon hover:bg-maroon/20 px-4 py-2 rounded-xl">Create Link</a>
+		<ul role="list" class="flex flex-col divide-y divide-maroon gap-4">
 			for _, link := range links {
 				<li class="flex flex-col lg:flex-row justify-between py-4">
 					<div class="flex flex-col gap-4">
 						<div class="">
-							<div class="antialiased max-w-72 truncate text-slate-950">{ link.LinkURL }</div>
+							<div class="antialiased max-w-72 truncate text-sky">{ link.LinkURL }</div>
 						</div>
 						<div class="flex flex-col">
-							<div class="antialiased text-slate-950">{ link.ShortenedURL }</div>
-							<div onclick={ copyLinkToClipboard(link.ShortenedURL) } class="text-xs antialiased cursor-pointer text-slate-700">Copy to clipboard</div>
+							<div class="antialiased text-sky">{ link.ShortenedURL }</div>
+							<div onclick={ copyLinkToClipboard(link.ShortenedURL) } class="text-xs antialiased cursor-pointer text-yellow">Copy to clipboard</div>
 						</div>
 					</div>
-					<div class="lg:w-32 shrink-0 flex flex-col items-center">
-						<img src={ fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID) } alt="QR code for link"/>
-						<div onclick={ copyLinkToClipboard(fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID)) } class="text-xs antialiased cursor-pointer text-slate-700">Share QR code</div>
+					<div class="lg:w-32 shrink-0 flex flex-col items-center gap-2">
+						<img src={ fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID) } alt="QR code for link" class="rounded-2xl"/>
+						<div onclick={ copyLinkToClipboard(fmt.Sprintf("%s/qr/%s", cfg.ClientURL, link.ID)) } class="text-xs antialiased cursor-pointer text-yellow">Share QR code</div>
 					</div>
 				</li>
 			}

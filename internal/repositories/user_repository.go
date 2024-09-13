@@ -123,12 +123,7 @@ func (repo *UserRepository) CreateUserSession(ctx context.Context, args CreateUs
 
 	token := xid.New().String()
 	expiresAt := time.Now().Add(time.Hour * 24 * 30)
-	expires := pgtype.Timestamptz{}
-	err := expires.Scan(expiresAt)
-	if err != nil {
-		repo.utils.logger.Err(err).Ctx(ctx).Msg("Scan expires at")
-		return nil, err
-	}
+	expires := pgtype.Timestamptz{Time: expiresAt, Valid: true}
 
 	row, err := repo.queries.CreateUserSession(ctx, models.CreateUserSessionParams{
 		UserID:    args.UserID,
@@ -161,22 +156,6 @@ func (repo *UserRepository) ExpireUserSession(ctx context.Context, sessionID uui
 	}
 	return nil
 }
-
-// func (repo *UserRepository) userModelToEntity(userModel models.User, userAuthModel models.UserAuth) *entities.User {
-// 	entity := entities.NewUserEntity(entities.NewUserEntityArgs{
-// 		ID:         userModel.ID,
-// 		GivenName:  userModel.GivenName,
-// 		FamilyName: userModel.FamilyName,
-// 		Email:      userModel.Email,
-// 		AvatarUrl:  userModel.AvatarUrl,
-// 		UserAuth: &entities.UserAuth{
-// 			Value:    userAuthModel.Value,
-// 			Provider: userAuthModel.Provider,
-// 		},
-// 	})
-
-// 	return entity
-// }
 
 type CreateUserPasswordArgs struct {
 	GivenName  *string

@@ -1,12 +1,28 @@
 package ui
 
-templ Home() {
-	<div>
-		<h1 class="text-3xl font-light">Home</h1>
-		<p>This is the home page.</p>
-		<div class="flex flex-col">
-			<a href="/create">Create Link</a>
-			<a href="/login">Login</a>
-		</div>
+import (
+	"fmt"
+	"github.com/mcorrigan89/url_shortener/internal/config"
+	"net/url"
+)
+
+func googleAuthLink(cfg *config.Config) string {
+	params := url.Values{
+		"scope":                  {"openid profile email"},
+		"access_type":            {"offline"},
+		"include_granted_scopes": {"true"},
+		"response_type":          {"code"},
+		"redirect_uri":           {fmt.Sprintf("%s/callback/google", cfg.ClientURL)},
+		"client_id":              {cfg.OAuth.Google.ClientID},
+	}
+
+	return fmt.Sprintf("https://accounts.google.com/o/oauth2/v2/auth?%s", params.Encode())
+}
+
+templ Home(cfg *config.Config) {
+	<div class="bg-base h-screen w-full flex flex-col justify-center items-center gap-8">
+		<h1 class="text-maroon text-4xl">Create a short link</h1>
+		<h2 class="text-maroon text-3xl">Sign in the get started</h2>
+		<a href={ templ.SafeURL(googleAuthLink(cfg)) } class="text-xl font-light text-sky">Login With Google</a>
 	</div>
 }

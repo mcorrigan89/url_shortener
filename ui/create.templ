@@ -3,13 +3,12 @@ package ui
 import "github.com/mcorrigan89/url_shortener/dto"
 
 templ CreateLink(form dto.CreateLinkForm) {
-	<div>
-		<h1 class="text-3xl font-light">Create</h1>
-		<form action="/create" method="post">
-			<label for="link_url">Link</label>
-			<input id="link_url" name="link_url" type="text"/>
-			{ form.FieldErrors["link_url"] }
-			<button type="submit">Submit</button>
+	<div class="flex items-center justify-center flex-col w-full h-screen gap-8 bg-base">
+		<h1 class="text-3xl font-light text-sky antialiased">Create a new shortlink</h1>
+		<form action="/create" method="post" class="flex flex-col justify-center gap-4">
+			<input id="link_url" name="link_url" type="text" class="w-lg border-0 outline outline-sky rounded-full px-4 py-2 text-sky"/>
+			<div class="self-center text-sm text-red antialiased">{ form.FieldErrors["link_url"] }</div>
+			<button type="submit" class="text-sky cursor-pointer self-center w-64 hover:bg-sky/10 p-2 rounded-full outline-sky outline">Create</button>
 		</form>
 	</div>
 }

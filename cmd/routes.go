@@ -20,13 +20,11 @@ func (app *application) routes() http.Handler {
 
 	// Pages
 	mux.HandleFunc("/", app.homePage)
-	mux.HandleFunc("/login", app.loginPage)
 	mux.HandleFunc("/links", app.linksPage)
 	mux.HandleFunc("/create", app.createLinkPage)
 
 	// Operations
 	mux.HandleFunc("GET /callback/google", app.loginGoogle)
-	mux.HandleFunc("POST /login/password", app.loginPassword)
 	mux.HandleFunc("POST /create", app.createLink)
 
 	// Redirects

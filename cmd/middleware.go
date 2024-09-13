@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -38,13 +37,12 @@ func (app *application) contextBuilder(next http.Handler) http.Handler {
 
 			user, session, err := app.services.UserService.GetUserBySessionToken(ctx, sessionToken.Value)
 
-			fmt.Println(user)
 			ctx = usercontext.ContextSetSession(ctx, session)
 			if err == nil && !session.IsExpired() {
 				ctx = usercontext.ContextSetUser(ctx, user)
 			}
 		} else {
-			app.logger.Err(err).Ctx(ctx).Msg("session cookie error")
+			app.logger.Warn().Ctx(ctx).Msg("session cookie no present")
 		}
 
 		r = r.WithContext(ctx)

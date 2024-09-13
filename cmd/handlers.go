@@ -25,17 +25,9 @@ func (app *application) healthy(w http.ResponseWriter, r *http.Request) {
 func (app *application) homePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	home := ui.Base("Home", "Home page", ui.Home())
+	home := ui.Base("Home", "Home page", ui.Home(app.config))
 
 	home.Render(ctx, w)
-}
-
-func (app *application) loginPage(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	login := ui.Base("Login", "Login page", ui.Login(app.config))
-
-	login.Render(ctx, w)
 }
 
 func (app *application) linksPage(w http.ResponseWriter, r *http.Request) {
@@ -138,13 +130,6 @@ func (app *application) qrCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(code)
 }
 
-func (app *application) loginPassword(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"message": "You are authenticated"}`))
-}
-
 func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -176,7 +161,7 @@ func (app *application) loginGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/links", http.StatusSeeOther)
 }
 
 func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
@@ -208,12 +193,11 @@ func (app *application) createLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form.CheckField(validator.NotBlank(form.LinkUrl), "link_url", "This field cannot be blank")
-	form.CheckField(validator.IsValidHTTPSDomainAndURL(form.LinkUrl), "link_url", "This field must be a valid URL")
+	form.CheckField(validator.IsValidURL(form.LinkUrl), "link_url", "This field must be a valid URL")
+	form.CheckField(validator.IsValidHTTPS(form.LinkUrl), "link_url", "This field must be a valid HTTPS URL")
 
 	if !form.Valid() {
-		fmt.Println(form.FieldErrors["link_url"])
 		createLink := ui.Base("Create link", "Create link page", ui.CreateLink(form))
-
 		createLink.Render(ctx, w)
 		return
 	}
